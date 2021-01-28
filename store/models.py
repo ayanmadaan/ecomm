@@ -8,7 +8,7 @@ class Customer(models.Model):                                                   
     email = models.EmailField(null=True)
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
 
 class Product(models.Model):            #Product data
@@ -20,6 +20,14 @@ class Product(models.Model):            #Product data
     def __str__(self):
         return self.name
 
+    @property
+    def product_imageURL(self):
+        try:
+            url = self.product_image.url
+        except:
+            url = ''
+        return url
+
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)              #foreign key relates Order to Customer
@@ -30,6 +38,18 @@ class Order(models.Model):
     def __str__(self):
         return str(self.id)
 
+    @property
+    def get_cart_total(self):
+        orderitems = self.orderitem_set.all()
+        total = sum([item.product_total for item in orderitems])
+        return total
+
+    @property
+    def get_cart_quantity(self):
+        orderitmes = self.orderitem_set.all()
+        total = sum([item.quantity for item in orderitmes])
+        return total
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
@@ -39,6 +59,11 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return self.product.name
+
+    @property
+    def product_total(self):
+        total = self.product.price * self.quantity
+        return total
 
 
 class Shipping(models.Model):
